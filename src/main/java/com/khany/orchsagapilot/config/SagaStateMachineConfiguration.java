@@ -1,6 +1,7 @@
 package com.khany.orchsagapilot.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachine;
@@ -9,26 +10,35 @@ import org.springframework.statemachine.config.builders.StateMachineStateConfigu
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.listener.StateMachineListener;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
+import org.springframework.statemachine.state.State;
+import org.springframework.statemachine.transition.Transition;
 
+@Slf4j
 @Configuration
 @EnableStateMachine
 @RequiredArgsConstructor
-class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<SagaStates, SagaEvents> {
+class SagaStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<SagaStates, SagaEvents> {
 
-    public void configure(StateMachineStateConfigurer<SagaStates, SagaEvents> States) throws Exception {
-        States
+    public void configure(StateMachineStateConfigurer<SagaStates, SagaEvents> states) throws Exception {
+        states
                 .withStates()
                 .initial(SagaStates.ORDER_REQUEST)
                 .state(SagaStates.DISCOUNT_QUERYING)
                 .state(SagaStates.DISCOUNT_QUERY_OK)
                 .state(SagaStates.DISCOUNT_QUERY_FAIL)
-                .state(SagaStates.DISCOUNT_CANCELING)
+                .state(SagaStates.POINT_QUERYING)
+                .state(SagaStates.POINT_QUERY_OK)
+                .state(SagaStates.POINT_QUERY_FAIL)
+                .state(SagaStates.DISCOUNT_REQUESTING)
                 .state(SagaStates.DISCOUNT_REQUEST_OK)
                 .state(SagaStates.DISCOUNT_REQUEST_FAIL)
+                .state(SagaStates.PAYMENT_REQUESTING)
                 .state(SagaStates.PAYMENT_REQUEST_OK)
                 .state(SagaStates.PAYMENT_REQUEST_FAIL)
+                .state(SagaStates.PAYMENT_CANCELING)
+                .state(SagaStates.DISCOUNT_CANCELING)
                 .end(SagaStates.ORDER_CANCELING)
-                .end(SagaStates.ORDER_COMPLETED);
+                .end(SagaStates.ORDER_COMPLETING);
     }
 
     public void configure(StateMachineTransitionConfigurer<SagaStates, SagaEvents> transitions) throws Exception {
@@ -55,28 +65,26 @@ class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<S
                 .source(SagaStates.DISCOUNT_REQUEST_FAIL).target(SagaStates.ORDER_CANCELING).event(SagaEvents.ORDER_CANCEL)
                 .and()
                 .withExternal()
-                .source(SagaStates.PAYMENT_REQUEST_OK).target(SagaStates.ORDER_COMPLETED).event(SagaEvents.ORDER_COMPLETE)
+                .source(SagaStates.PAYMENT_REQUEST_OK).target(SagaStates.ORDER_COMPLETING).event(SagaEvents.ORDER_COMPLETE)
                 .and()
                 .withExternal()
                 .source(SagaStates.PAYMENT_REQUEST_FAIL).target(SagaStates.DISCOUNT_CANCELING).event(SagaEvents.DISCOUNT_CANCEL)
                 .and()
                 .withExternal()
+                .source(SagaStates.ORDER_CANCEL_REQUESTING).target(SagaStates.PAYMENT_CANCELING).event(SagaEvents.PAYMENT_CANCEL)
+                .and()
+                .withExternal()
+                .source(SagaStates.PAYMENT_CANCELING).target(SagaStates.DISCOUNT_CANCELING).event(SagaEvents.DISCOUNT_CANCEL)
+                .and()
+                .withExternal()
                 .source(SagaStates.DISCOUNT_CANCELING).target(SagaStates.ORDER_CANCELING).event(SagaEvents.ORDER_CANCEL)
-                .and()
-                .withExternal()
-                .source(SagaStates.ORDER_CANCELING).target(SagaStates.PAYMENT_CANCELING).event(SagaEvents.PAYMENT_CANCEL)
-                .and()
-                .withExternal()
-                .source(SagaStates.PAYMENT_CANCELING).target(SagaStates.DISCOUNT_CANCELING).event(SagaEvents.PAYMENT_CANCEL)
         ;
-
     }
 
 //    @Bean
 //    public StateMachineListener<SagaStates, SagaEvents> listener() {
 //        return new StateMachineListenerAdapter<SagaStates, SagaEvents>() {
-//
-//            public void stateChanged(States<SagaStates, SagaEvents> from, States<States, SagaEvents> to) {
+//            public void stateChanged(states<SagaStates, SagaEvents> from, states<States, SagaEvents> to) {
 //                System.out.println("State changed to " + to.getId());
 //            }
 //        };
@@ -87,22 +95,32 @@ class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<S
 //                .runtimePersister(stateMachinePersist);
 //    }
 //
+    @Bean
+    public StateMachineListener<SagaStates, SagaEvents> listener() {
+        return new StateMachineListenerAdapter<SagaStates, SagaEvents>() {
+            @Override
+            public void transition(Transition<SagaStates, SagaEvents> transition) {
+                log.debug("Transition log : source: {} -> target : {}", transition.getSource().getStates()
+                        ,transition.getTarget().getStates());
+                System.out.println("Transition: " + transition.getSource().getId().toString() + " -> " + transition.getTarget().getId());
+            }
+
+            @Override
+            public void stateChanged(State<SagaStates, SagaEvents> fromState, State<SagaStates, SagaEvents> toState) {
+                // 리스너의 동작을 구현
+                log.info("State changed from {} to {}. Current status {}",
+                        fromState == null ? "start": fromState.getId(),
+                        toState.getId(), toState.getStates());
+            }
+        };
+    }
+
 //    @Bean
-//    public StateMachineListener<SagaStates, SagaEvents> listener() {
-//        return new StateMachineListenerAdapter<SagaStates, SagaEvents>() {
-//            @Override
-//            public void transition(Transition<SagaStates, SagaEvents> transition) {
-//                System.out.println("Transition: " + transition.getSource().getId() + " -> " + transition.getTarget().getId());
-//            }
-//        };
-//    }
-//
-//    @Bean
-//    public Action<SagaStates, SagaEvents> actionA() {
+//    public Action<SagaStates, SagaEvents> actionDiscountQuery() {
 //        return new Action<SagaStates, SagaEvents>() {
 //            @Override
 //            public void execute(StateContext<SagaStates, SagaEvents> context) {
-//                System.out.println("Action A");
+//                System.out.println("Action actionDiscountQuery");
 //            }
 //        };
 //    }
