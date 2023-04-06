@@ -33,7 +33,7 @@ public class SagaMachineService implements SagaMachineUseCase {
     @Override
     public Saga getDiscount() {
         stateMachine.sendEvent(SagaEvents.DISCOUNT_QUERY);
-        log.debug("inside service :::::::: !!!!!!!!");
+        System.out.println("inside service :::::::: !!!!!!!!");
         return Saga.builder()
                 .eventTimestamp(new Timestamp(System.currentTimeMillis()))
                 .customerId(1L)
@@ -45,7 +45,7 @@ public class SagaMachineService implements SagaMachineUseCase {
 
     public static String getNextStep(StateMachine<SagaStates, SagaEvents> stateMachine) {
         Transition<SagaStates, SagaEvents> transition = stateMachine.getTransitions().iterator().next();
-        log.debug("transition now status :: {}", transition.getTarget().getId().toString());
+        System.out.println("transition now status :: " + transition.getTarget().getId().toString());
         return transition.getTarget().getId().toString();
     }
 
