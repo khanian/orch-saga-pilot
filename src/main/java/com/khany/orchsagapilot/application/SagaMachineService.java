@@ -5,22 +5,15 @@ import com.khany.orchsagapilot.config.SagaEvents;
 import com.khany.orchsagapilot.config.SagaStates;
 import com.khany.orchsagapilot.domain.Saga;
 import lombok.AllArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.Message;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.sql.Timestamp;
-import java.util.Collection;
+import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
-
-import static com.khany.orchsagapilot.config.SagaStates.*;
 
 @Slf4j
 @Service
@@ -40,7 +33,7 @@ public class SagaMachineService implements SagaMachineUseCase {
     public Saga nextStepSaga(Saga saga) {
         handleEvent(saga.currentState(), stateMachine);
         return saga.builder()
-                .eventTimestamp(new Timestamp(System.currentTimeMillis()))
+                .eventTimestamp(LocalDateTime.now())
                 .customerId(saga.customerId())
                 .orderId(saga.orderId())
                 .currentState(getNextStep(stateMachine))
@@ -50,12 +43,13 @@ public class SagaMachineService implements SagaMachineUseCase {
 
     @Override
     public Saga getDiscount() {
-        stateMachine.sendEvent(SagaEvents.DISCOUNT_QUERY);
+        stateMachine.getInitialState();
+        stateMachine.getState();
         log.info("inside service :::::::: !!!!!!!!");
         String nextStep = getNextStep(stateMachine);
         System.out.println("next step = " + nextStep);
         return Saga.builder()
-                .eventTimestamp(new Timestamp(System.currentTimeMillis()))
+                .eventTimestamp(LocalDateTime.now())
                 .customerId(1L)
                 .orderId(1L)
                 .currentState(nextStep)
@@ -76,7 +70,7 @@ public class SagaMachineService implements SagaMachineUseCase {
 
         log.info ("######## now you step = {}, next = {}, current get id name === {}", nextStep, nextStep1, getIds);
         return Saga.builder()
-                .eventTimestamp(new Timestamp(System.currentTimeMillis()))
+                .eventTimestamp(LocalDateTime.now())
                 .customerId(1L)
                 .orderId(1L)
                 .currentState(nextStep)

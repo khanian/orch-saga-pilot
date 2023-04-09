@@ -1,13 +1,12 @@
 package com.khany.orchsagapilot.domain;
 
-import com.khany.orchsagapilot.config.SagaEvents;
 import lombok.Builder;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Builder
 public record Saga(
-        Timestamp eventTimestamp,
+        LocalDateTime eventTimestamp,
         Long orderId,
         Long customerId,
         String currentState,

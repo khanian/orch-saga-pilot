@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -54,7 +54,7 @@ public class SagaMachineController {
     @GetMapping("/next")
     public ResponseSagaDto getNextStep() {
         Saga saga = Saga.builder()
-                .eventTimestamp(new Timestamp(System.currentTimeMillis()))
+                .eventTimestamp(LocalDateTime.now())
                 .customerId(2L)
                 .orderId(2L)
                 .currentState(String.valueOf(SagaStates.DISCOUNT_REQUEST_OK))

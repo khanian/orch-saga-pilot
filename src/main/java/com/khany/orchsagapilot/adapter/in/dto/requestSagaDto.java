@@ -1,9 +1,9 @@
 package com.khany.orchsagapilot.adapter.in.dto;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public record requestSagaDto (
-    Timestamp eventTimestamp,
+    LocalDateTime eventTimestamp,
     Long orderId,
     Long customerId,
     String currentState,
