@@ -1,5 +1,6 @@
 package com.khany.orchsagapilot.domain;
 
+import com.khany.orchsagapilot.config.SagaEvents;
 import lombok.Builder;
 
 import java.sql.Timestamp;
@@ -10,5 +11,4 @@ public record Saga(
         Long orderId,
         Long customerId,
         String currentState,
-        String value) {
-}
+        String value) {}

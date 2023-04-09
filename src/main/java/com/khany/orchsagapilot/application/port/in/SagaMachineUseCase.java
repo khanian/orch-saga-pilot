@@ -6,4 +6,6 @@ public interface SagaMachineUseCase {
     Saga nextStepSaga(Saga saga);
 
     Saga getDiscount();
+
+    Saga getPayment();
 }
