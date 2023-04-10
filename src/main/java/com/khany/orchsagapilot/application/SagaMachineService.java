@@ -7,6 +7,7 @@ import com.khany.orchsagapilot.domain.Saga;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.statemachine.StateMachine;
+import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class SagaMachineService implements SagaMachineUseCase {
+
+    private final StateMachineFactory<SagaStates, SagaEvents> factory;
 
     private final StateMachine<SagaStates, SagaEvents> stateMachine;
     private Set<Transition> transitions;

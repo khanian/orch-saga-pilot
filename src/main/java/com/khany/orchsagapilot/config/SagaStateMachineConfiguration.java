@@ -1,7 +1,5 @@
 package com.khany.orchsagapilot.config;
 
-import com.khany.orchsagapilot.application.port.in.SagaMachineUseCase;
-import com.khany.orchsagapilot.domain.Saga;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,10 +11,8 @@ import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
-import org.springframework.statemachine.listener.StateMachineListener;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.state.State;
-import org.springframework.statemachine.transition.Transition;
 
 @Slf4j
 @Configuration
@@ -29,10 +25,10 @@ class SagaStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<Sa
         states
                 .withStates()
                 .initial(SagaStates.ORDER_REQUEST)
-                .state(SagaStates.DISCOUNT_CHECK)
+                .state(SagaStates.DISCOUNT_CHECKED)
                 .state(SagaStates.DISCOUNT_CHECK_OK)
                 .state(SagaStates.DISCOUNT_CHECK_FAIL)
-                .state(SagaStates.POINT_CHECK)
+                .state(SagaStates.POINT_CHECKED)
                 .state(SagaStates.POINT_CHECK_OK)
                 .state(SagaStates.POINT_CHECK_FAIL)
                 .state(SagaStates.DISCOUNT_REQUESTED)
@@ -52,11 +48,11 @@ class SagaStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<Sa
     public void configure(StateMachineTransitionConfigurer<SagaStates, SagaEvents> transitions) throws Exception {
         transitions
                 .withExternal()
-                .source(SagaStates.ORDER_REQUEST).target(SagaStates.DISCOUNT_CHECK).event(SagaEvents.DISCOUNT_QUERY)
+                .source(SagaStates.ORDER_REQUEST).target(SagaStates.DISCOUNT_CHECKED).event(SagaEvents.DISCOUNT_QUERY)
                 .action(actionDiscountQuery())
                 .and()
                 .withExternal()
-                .source(SagaStates.DISCOUNT_CHECK_OK).target(SagaStates.POINT_CHECK).event(SagaEvents.POINT_QUERY)
+                .source(SagaStates.DISCOUNT_CHECK_OK).target(SagaStates.POINT_CHECKED).event(SagaEvents.POINT_QUERY)
                 .and()
                 .withExternal()
                 .source(SagaStates.DISCOUNT_CHECK_FAIL).target(SagaStates.ORDER_CANCELED).event(SagaEvents.ORDER_CANCEL)
